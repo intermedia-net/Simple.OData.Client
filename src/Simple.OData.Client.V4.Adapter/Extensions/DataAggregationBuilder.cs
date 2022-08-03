@@ -17,7 +17,7 @@ namespace Simple.OData.Client.V4.Adapter.Extensions
 
 		internal string Build(ResolvedCommand command, ISession session)
 		{
-			var context = new ExpressionContext(session, null, null, command.DynamicPropertiesContainerName);
+			var context = new ExpressionContext(session, command.EntityCollection, null, command.DynamicPropertiesContainerName);
 			var commandText = string.Empty;
 			foreach (var applyClause in DataAggregationClauses)
 			{
