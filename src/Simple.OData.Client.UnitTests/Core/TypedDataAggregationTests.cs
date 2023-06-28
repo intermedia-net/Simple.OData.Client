@@ -24,6 +24,19 @@ public class TypedDataAggregationTests : CoreTestBase
 	}
 
 	[Fact]
+	public async Task FilterWithCast()
+	{
+		var command = _client
+			.WithExtensions()
+			.For<Product>()
+			.Filter(p => (p is ProductWithUnmappedProperty)
+				&& ((ProductWithUnmappedProperty)p).UnmappedName == "TestValue");
+
+		var commandText = await command.GetCommandTextAsync().ConfigureAwait(false);
+		Assert.Equal("Products?$filter=isof%28%27NorthwindModel.ProductWithUnmappedProperty%27%29%20and%20cast%28%27NorthwindModel.ProductWithUnmappedProperty%27%29%2FUnmappedName%20eq%20%27TestValue%27", commandText);
+	}
+
+	[Fact]
 	public async Task AggregateWithAverage()
 	{
 		var command = _client

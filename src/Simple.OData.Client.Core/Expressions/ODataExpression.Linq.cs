@@ -45,8 +45,7 @@ public partial class ODataExpression
 			{
 				case ExpressionType.Parameter:
 					// NOTE: Can't support ITypeCache here as we might be dealing with dynamic types/expressions
-					var memberNames = string.Join(".", memberChain.Select(x => x.GetMappedName()));
-					return FromReference(memberNames);
+					return FromReference(CreateReference(memberChain));
 				case ExpressionType.Constant:
 					return ParseConstantExpression(memberExpression.Expression, memberChain);
 				case ExpressionType.MemberAccess:
@@ -60,6 +59,9 @@ public partial class ODataExpression
 					{
 						return ParseMemberExpression(memberExpression.Expression as MemberExpression, memberChain);
 					}
+				case ExpressionType.Convert:
+				case ExpressionType.TypeAs:
+					return ParseTypeAsExpression(memberExpression.Expression, CreateReference(memberChain));
 
 				default:
 					throw Utils.NotSupportedExpression(expression);
@@ -245,7 +247,7 @@ public partial class ODataExpression
 			});
 	}
 
-	private static ODataExpression ParseTypeAsExpression(Expression expression)
+	private static ODataExpression ParseTypeAsExpression(Expression expression, string? reference = null)
 	{
 		var typeAsExpression = expression as UnaryExpression;
 		var targetExpression = ParseLinqExpression(typeAsExpression.Operand);
@@ -254,7 +256,8 @@ public partial class ODataExpression
 			{
 				FunctionName = "cast",
 				Arguments = new List<ODataExpression>() { targetExpression, FromValue(typeAsExpression.Type) },
-			});
+			},
+			reference);
 	}
 
 	private static ODataExpression ParseTypedParameterExpression()
@@ -317,5 +320,10 @@ public partial class ODataExpression
 		}
 
 		return EvaluateConstValue(itemValue, memberChain);
+	}
+
+	private static string CreateReference(Stack<MemberInfo> memberChain)
+	{
+		return string.Join(".", memberChain.Select(x => x.GetMappedName()));
 	}
 }

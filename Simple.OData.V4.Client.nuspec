@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
-    <id>Simple.OData.V4.Client</id>
+    <id>Intermedia.Simple.OData.V4.Client</id>
     <authors>Vagif Abilov</authors>
     <version>0.0.0.0</version>
     <owners>Vagif Abilov</owners>

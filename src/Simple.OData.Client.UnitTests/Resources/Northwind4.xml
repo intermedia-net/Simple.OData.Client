@@ -137,6 +137,9 @@
           <ReferentialConstraint Property="SupplierID" ReferencedProperty="SupplierID" />
         </NavigationProperty>
       </EntityType>
+      <EntityType Name="ProductWithUnmappedProperty" BaseType="NorthwindModel.Product">
+        <Property Name="UnmappedName" Type="Edm.String"/>
+      </EntityType>
       <EntityType Name="Region">
         <Key>
           <PropertyRef Name="RegionID" />

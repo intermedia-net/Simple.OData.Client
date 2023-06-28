@@ -20,9 +20,9 @@ public partial class ODataExpression
 
 		if (_operator == ExpressionType.Default && !IsValueConversion)
 		{
-			return Reference != null ?
-				FormatReference(context) : Function != null ?
-				FormatFunction(context) :
+			return Function != null ?
+				FormatFunction(context) : Reference != null ?
+				FormatReference(context) :
 				FormatValue(context);
 		}
 		else if (IsValueConversion)
@@ -124,10 +124,13 @@ public partial class ODataExpression
 		{
 			return FormatAnyAllFunction(context);
 		}
-		else if (string.Equals(Function.FunctionName, ODataLiteral.IsOf, StringComparison.OrdinalIgnoreCase) ||
-				 string.Equals(Function.FunctionName, ODataLiteral.Cast, StringComparison.OrdinalIgnoreCase))
+		else if (string.Equals(Function.FunctionName, ODataLiteral.IsOf, StringComparison.OrdinalIgnoreCase))
 		{
-			return FormatIsOfCastFunction(context);
+			return FormatIsOfFunction(context);
+		}
+		else if (string.Equals(Function.FunctionName, ODataLiteral.Cast, StringComparison.OrdinalIgnoreCase))
+		{
+			return FormatCastFunction(context);
 		}
 		else if (string.Equals(Function.FunctionName, "get_Item", StringComparison.Ordinal) &&
 			Function.Arguments.Count == 1)
@@ -221,7 +224,7 @@ public partial class ODataExpression
 		return FormatScope($"{formattedNavigationPath}/{Function.FunctionName.ToLowerInvariant()}({formattedArguments})", context);
 	}
 
-	private string FormatIsOfCastFunction(ExpressionContext context)
+	private string FormatIsOfFunction(ExpressionContext context)
 	{
 		var formattedArguments = string.Empty;
 		if (Function.Arguments.First() is not null && !Function.Arguments.First().IsNull)
@@ -233,6 +236,39 @@ public partial class ODataExpression
 		formattedArguments += FormatExpression(Function.Arguments.Last(), new ExpressionContext(context.Session));
 
 		return $"{Function.FunctionName.ToLowerInvariant()}({formattedArguments})";
+	}
+
+	private string FormatCastFunction(ExpressionContext context)
+	{
+		var formattedArguments = string.Empty;
+		if (Function.Arguments.First() is not null && !Function.Arguments.First().IsNull)
+		{
+			formattedArguments += FormatExpression(Function.Arguments.First(), new ExpressionContext(context.Session));
+			formattedArguments += ",";
+		}
+
+		var formattedLastArgument = FormatExpression(
+			Function.Arguments.Last(),
+			new ExpressionContext(context.Session));
+
+		formattedArguments += formattedLastArgument;
+
+		var formattedCastFunction = $"{Function.FunctionName.ToLowerInvariant()}({formattedArguments})";
+
+		if (Reference != null)
+		{
+			var entityCollection = context.Session.Metadata.GetEntityCollection(formattedLastArgument);
+
+			var expressionContext = new ExpressionContext(
+				context.Session,
+				entityCollection,
+				context.ScopeQualifier,
+				context.DynamicPropertiesContainerName);
+
+			formattedCastFunction += $"/{FormatReference(expressionContext)}";
+		}
+
+		return formattedCastFunction;
 	}
 
 	private string FormatEnumHasFlagFunction(ExpressionContext context)

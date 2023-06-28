@@ -61,6 +61,12 @@ public partial class ODataExpression
 		Function = function;
 	}
 
+	internal protected ODataExpression(ExpressionFunction function, string reference)
+	{
+		Function = function;
+		Reference = reference;
+	}
+
 	internal protected ODataExpression(ODataExpression left, ODataExpression right, ExpressionType expressionOperator)
 	{
 		_left = left;
@@ -99,6 +105,11 @@ public partial class ODataExpression
 	internal static ODataExpression FromFunction(ExpressionFunction function)
 	{
 		return new ODataExpression(function);
+	}
+
+	internal static ODataExpression FromFunction(ExpressionFunction function, string reference)
+	{
+		return new ODataExpression(function, reference);
 	}
 
 	internal static ODataExpression FromFunction(string functionName, ODataExpression targetExpression, IEnumerable<object> arguments)
